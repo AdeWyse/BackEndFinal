@@ -1,17 +1,43 @@
 const express = require("express")
 const router = express.Router()
 
+const validator = require("../helpers/validator")
+
 const {sucess, fail} = require("../helpers/resposta")
 const GenreDAO = require('../servico/GenreDAO')
 
+
 router.get("/", async (req, res) => {
-    if(req.session.user){
-        let genres = await GenreDAO.list()
-        res.json(sucess(genres, "list"))
-    }else{
-        res.status(500).json(fail("Você não tem permissão para isso"))
+    if (req.session.user) {
+        let { page = 1, limit = 10 } = req.query;
+        page = parseInt(page);
+        limit = parseInt(limit);
+
+        if (page == null || page < 1 || limit < 1) {
+            res.status(500).json(fail("Pagina inexistente"));
+        }
+
+        if (limit == 10 || limit ==  15 || limit == 30){
+
+            let offset = (page - 1) * limit;
+
+            try {
+                let { genres, total } = await GenreDAO.list(limit, offset);
+
+                let totalPages = Math.ceil(total / limit);
+
+                res.json(sucess({ genres, totalPages, currentPage: page, total }, "list"));
+            } catch (error) {
+                res.status(500).json(fail("Erro ao listar os generos"));
+            }
+        }else{
+            res.status(500).json(fail("Limite de paginação não existe"));
+        }
+    } else {
+        res.status(500).json(fail("Você não tem permissão para isso"));
     }
-})
+
+});
 
 router.get("/:id", async (req, res) => {
     if(req.session.user){
@@ -25,13 +51,13 @@ router.get("/:id", async (req, res) => {
     }
 })
 
-router.post("/", async (req, res) => {
+router.post("/", validator.validaNome, async (req, res) => {
     if(req.session.user){
         let isAdmin = await UserDAO.isAdmin(req.session.user)
         if(isAdmin){
             const {nome} = req.body
-            //TODO validar os campos
             let obj = await GenreDAO.save(nome)
+
             if (obj)
                 res.json(sucess(obj))
             else 
@@ -44,14 +70,12 @@ router.post("/", async (req, res) => {
     }
 })
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", validator.validaNome, async (req, res) => {
     if(req.session.user){
         let isAdmin = await UserDAO.isAdmin(req.session.user)
         if(isAdmin){
             const {id} = req.params
             const {nome} = req.body
-
-            //TODO validar os campos
 
             let [result] = await GenreDAO.update(id, nome)
             console.log(result)

@@ -1,9 +1,17 @@
 const {DataTypes, Op} = require("sequelize")
 const GenreModel = require('../model/Genre')
 module.exports = {
-    list: async function() {
-        const genres = await GenreModel.findAll()
-        return genres
+    
+    list: async function(limit, offset) {
+        
+        const total = await GenreModel.count();
+    
+        const genres = await GenreModel.findAll({
+            limit: limit,
+            offset: offset
+        });
+    
+        return { genres, total };
     },
     
     save: async function(nome) {

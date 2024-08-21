@@ -5,9 +5,16 @@ const GenreModel = require('../model/Genre')
 const GenreDAO = require('./GenreDAO') 
 
 module.exports = {
-    list: async function() {
-        const musics = await MusicModel.findAll({ include: ArtistModel })
-        return musics
+    list: async function(limit, offset) {
+        
+        const total = await MusicModel.count();
+    
+        const musics = await MusicModel.findAll({
+            limit: limit,
+            offset: offset
+        });
+    
+        return { musics, total };
     },
     
     save: async function(nome, artist, genre) {
@@ -60,5 +67,22 @@ module.exports = {
 
     getById: async function(id) {
         return await MusicModel.findByPk(id)
+    },
+
+    listByGenre: async function(genreId, limit = 10, offset = 0) {
+        const total = await MusicModel.count({
+            where: { genre: genreId }
+        });
+
+        const musics = await MusicModel.findAll({
+            where: { genre: genreId },
+            limit: limit,
+            offset: offset,
+            include: [
+                { model: GenreModel, as: 'Genre' }
+            ]
+        });
+
+        return { musics, total };
     }
 }

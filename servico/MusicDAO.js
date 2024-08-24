@@ -24,7 +24,7 @@ module.exports = {
         } else if (typeof artist === 'string') {
             obj = await ArtistDAO.getByName(artist) 
             if (!obj) {
-                return null
+                return "Artista nao existe"
             }
             artist = obj.codigo
         }
@@ -33,9 +33,8 @@ module.exports = {
             genre = genre.codigo
         } else if (typeof genre === 'string') {
             obj = await GenreDAO.getByName(genre) 
-            console.log(obj)
             if (!obj) {
-                return null
+                return "Genero nao existe"
             }
             genre = obj.codigo
         }

@@ -4,6 +4,7 @@ const ArtistDAO = require('./ArtistDAO')
 const GenreModel = require('../model/Genre')
 const GenreDAO = require('./GenreDAO') 
 
+
 module.exports = {
     list: async function(limit, offset) {
         
@@ -22,7 +23,6 @@ module.exports = {
             artist = artist.codigo
         } else if (typeof artist === 'string') {
             obj = await ArtistDAO.getByName(artist) 
-            console.log(obj)
             if (!obj) {
                 return null
             }

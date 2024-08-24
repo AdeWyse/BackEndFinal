@@ -6,6 +6,7 @@ const validator = require("../helpers/validator")
 const {sucess, fail} = require("../helpers/resposta")
 const MusicDAO = require("../servico/MusicDAO")
 const GenreDAO = require("../servico/GenreDAO")
+const UserDAO = require('../servico/UserDAO')
 
 router.get("/", async (req, res) => {
     if (req.session.user) {
@@ -64,7 +65,6 @@ router.post("/", validator.validaNome, validator.validaArtista, validator.valida
                     MusicDAO.save(nome, artista, genero).then(music => {
                         res.json(sucess(music))
                     }).catch(err => {
-                        console.log(err)
                         res.status(500).json(fail("Falha ao salvar a nova musica"))
                     })
                 }else{

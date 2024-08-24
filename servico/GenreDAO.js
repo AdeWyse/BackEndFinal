@@ -1,9 +1,10 @@
-const {DataTypes, Op} = require("sequelize")
+const {DataTypes, Op, fn, col} = require("sequelize")
 const GenreModel = require('../model/Genre')
+const MusicModel = require('../model/Music')
+
 module.exports = {
     
     list: async function(limit, offset) {
-        
         const total = await GenreModel.count();
     
         const genres = await GenreModel.findAll({
@@ -29,7 +30,6 @@ module.exports = {
     },
 
     delete: async function(id) {
-        //Precisa fazer algo para os livros que este autor possui
         return await GenreModel.destroy({where: { codigo: id }})
     },
 
@@ -41,5 +41,29 @@ module.exports = {
         return await GenreModel.findOne({where: {nome: {
             [Op.like]: '%' + nome + '%'
         } }})
-    }
+    },
+
+    listQuantityMusicByGenre: async function(limit, offset) {
+        const genres = await GenreModel.findAll({
+            limit: limit,
+            offset: offset
+        });
+
+        const genreList = [];
+
+        for (const genre of genres) {
+            const musicCount = await MusicModel.count({
+                where: { genre: genre.codigo }
+            });
+
+            genreList.push({
+                genre: genre.nome,
+                musicQuantity: musicCount
+            });
+        }
+        const total = genreList.length
+
+        return { genres: genreList, total };
+            
+    },
 }
